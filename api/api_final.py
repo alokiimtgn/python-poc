@@ -1,3 +1,4 @@
+#!/usr/bin/python
 import flask
 from flask import request, jsonify
 import sqlite3
@@ -67,4 +68,16 @@ def api_filter():
 
     return jsonify(results)
 
+#api for inserting the new record
+@app.route('/api/v1/resources/books/addBook', methods=['POST'])
+def create_records():
+    conn = sqlite3.connect('books.db')
+    query_parameters = request.args
+    published = query_parameters.get('published')
+    print ("Opened database successfully");
+    conn.execute("INSERT INTO books (author,first_sentence,published,title) \
+      VALUES ('Alok', 'first_sentence', 2012, 'mytitle')");
+    conn.commit()
+    print ("Records created successfully");
+    return jsonify(query_parameters)
 app.run()
