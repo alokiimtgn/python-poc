@@ -7,6 +7,7 @@ from response import response
 
 app = flask.Flask(__name__)
 app.config["DEBUG"] = True
+databaseName = "books.db"
 
 def dict_factory(cursor, row):
     d = {}
@@ -68,19 +69,32 @@ def api_filter():
     return jsonify(results)
 
 
-#api for creating record
+#api for creating record 
 @app.route('/api/v1/resources/books/addBook', methods=['POST'])
 def create_records():
-    conn = sqlite3.connect('books.db') #create connectio with db
+    rmsg = ""
+    conn = sqlite3.connect(databaseName) #create connectio with db
     query_parameters = request.args #get params from request
+    id = query_parameters.get('id')
     published = query_parameters.get('published')
-    print ("Opened database successfully");
-    conn.execute("INSERT INTO books (author,first_sentence,published,title) \
-      VALUES ('Alok', 'first_sentence', 2012, 'mytitle')"); #executinng the specified curd operation
-    conn.commit()
-   # print(response.function())
-    print ("Records created successfully");
-    return response.sendResponse(published)   
+    author = query_parameters.get('author')
+    title = query_parameters.get('title')
+    first_sentence = query_parameters.get('first_sentence')
+    sqlQuery = "INSERT INTO books (id,author,first_sentence,published,title) values (?,?,?,?,?)"
+    try:
+        cur = conn.cursor()
+        c = cur.execute(sqlQuery, ([id,published,author,title,first_sentence]))
+        rmsg = "Record Created successfully"
+    except sqlite3.IntegrityError as msg:
+        rmsg = "Record already exist with this ID"
+        print(msg)
+    except Exception as msg:
+        print(msg)    
+    finally:
+        conn.commit()
+        conn.close()              
+    return jsonify(rmsg)
+
 
 
 #api for updating a record
@@ -117,7 +131,7 @@ def delete_records():
     print ("Records deleted successfully");
     return response.sendResponse(published) 
 
-@app.route('/api/v1/resources/books/addBookPrep', methods=['POST'])
+@app.route('/api/v1/resources/books/addEmpPrep', methods=['POST'])
 def prepS():
     con = sqlite3.connect('a.db')
     cur = con.cursor()
