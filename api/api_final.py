@@ -140,22 +140,6 @@ def deleteBook():
     return response.sendResponse(published) 
 
 
-@app.route('/api/v1/resources/books/addEmpPrep', methods=['POST'])
-def prepS():
-    con = sqlite3.connect(databaseName)
-    cur = con.cursor()
-    query_parameters = request.args
-    sqlQuery = "INSERT INTO EMP (name) values (?)"
-    name = query_parameters.get("name")
-    print(cur.rowcount)
-    #c = cur.execute('INSERT INTO EMP (name) values (?)', ([name]))
-    c = cur.execute(sqlQuery,([name]))
-    print(cur.rowcount)
-    con.commit()
-    con.close()
-    return response.sendResponse("Record inserted successfully")
-
-
 @app.errorhandler(404)
 def page_not_found(e):
     return "<h1>404</h1><p>The resource could not be found.</p>", 404
