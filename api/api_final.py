@@ -126,19 +126,23 @@ def updateBook():
 #api for deleting a record
 @app.route('/api/v1/resources/books/deleteBook', methods=['DELETE'])
 def deleteBook():
-    conn = sqlite3.connect('books.db') #create connection with db
+    conn = sqlite3.connect(databaseName) #create connection with db
     query_parameters = request.args #get params from request
-    published = query_parameters.get('published')
-    print ("Opened database successfully "+published);
-    print(published)
-    sql = "DELETE from BOOKS WHERE published = published"
-    x = conn.execute(sql); #executinng the specified curd operation
-    print(x)
-    conn.commit()
-    conn.close()
-    # print(response.function())
-    print ("Records deleted successfully");
+    sqlQuery = "DELETE from BOOKS WHERE published = ?"
+    if query_parameters:
+        published = query_parameters.get('published')
+    try:
+        if published:
+            x = conn.execute(sqlQuery,([published])); #executinng the specified curd operation
+            print(x)
+            if x:
+                conn.commit()
+                print ("Records deleted successfully");        
+        conn.close()
+    except Exception as errorMessage:
+        print(errorMessage)
     return response.sendResponse(published) 
+
 
 @app.route('/api/v1/resources/books/addEmpPrep', methods=['POST'])
 def prepS():
@@ -149,7 +153,7 @@ def prepS():
     name = query_parameters.get("name")
     print(cur.rowcount)
     #c = cur.execute('INSERT INTO EMP (name) values (?)', ([name]))
-    c = cur.execute(sqlQuery, ([name]))
+    c = cur.execute(sqlQuery,([name]))
     print(cur.rowcount)
     con.commit()
     con.close()
