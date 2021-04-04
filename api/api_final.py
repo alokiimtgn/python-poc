@@ -46,7 +46,9 @@ def getAllBooks():
 #api for fetching all the existing books on the basis of supplied params
 @app.route('/api/v1/resources/books', methods=['GET'])
 def getBooksBy():
-    conn = sqlite3.connect('books.db')
+    conn = sqlite3.connect(databaseName)
+    conn.row_factory = dict_factory
+    cur = conn.cursor()
     query_parameters = request.args
     id = query_parameters.get('id')
     published = query_parameters.get('published')
@@ -65,9 +67,6 @@ def getBooksBy():
     if not (id or published or author):
         return page_not_found(404)
     query = query[:-4] + ';'
-    conn = sqlite3.connect('books.db')
-    conn.row_factory = dict_factory
-    cur = conn.cursor()
     results = cur.execute(query, to_filter).fetchall()
     return jsonify(results)
 
@@ -110,11 +109,8 @@ def updateBook():
         published = query_parameters.get('published')
         first_sentence = query_parameters.get("first_sentence") 
         author = query_parameters.get("author") 
-        print(published)
-        print(first_sentence) 
     try:
          x = cur.execute(sqlQuery,([first_sentence,author,published])); #executinng the specified curd operation
-         print(x)
     except Exception as errorMessage:
          print(errorMessage)
     conn.commit()
@@ -146,7 +142,7 @@ def deleteBook():
 
 @app.route('/api/v1/resources/books/addEmpPrep', methods=['POST'])
 def prepS():
-    con = sqlite3.connect('a.db')
+    con = sqlite3.connect(databaseName)
     cur = con.cursor()
     query_parameters = request.args
     sqlQuery = "INSERT INTO EMP (name) values (?)"
