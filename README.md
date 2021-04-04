@@ -1,5 +1,5 @@
 # python-poc
-This repository contains basic demo codes of python for creating python API using <b>sqlite</b> Database.
+This repository contains basic demo codes of python for creating python API using <b>sqlite</b> Database. The Endpoints of various APIs are as following.
 
 <b>Get All Books(GET) : </b>
 http://localhost:5000/api/v1/resources/books/all
