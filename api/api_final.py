@@ -27,8 +27,10 @@ def home():
 def api_all():
     conn = sqlite3.connect('books.db')
     conn.row_factory = dict_factory
+    print(dict_factory)
     cur = conn.cursor()
     all_books = cur.execute('SELECT * FROM books;').fetchall()
+    print(all_books)
     return jsonify(all_books)
 
 
@@ -40,6 +42,7 @@ def page_not_found(e):
 #api for fetching all the existing books on the basis of supplied params
 @app.route('/api/v1/resources/books', methods=['GET'])
 def api_filter():
+    conn = sqlite3.connect('books.db')
     query_parameters = request.args
     id = query_parameters.get('id')
     published = query_parameters.get('published')
@@ -77,16 +80,17 @@ def create_records():
     conn.commit()
    # print(response.function())
     print ("Records created successfully");
-    return response.sendResponse(published)
+    return response.sendResponse(published)   
 
 
 #api for updating a record
 @app.route('/api/v1/resources/books/updateBook', methods=['PUT'])
 def update_records():
-    conn = sqlite3.connect('books.db') #create connectio with db
+    conn = sqlite3.connect('books.db') #create connection with db
     query_parameters = request.args #get params from request
-    published = query_parameters.get('published')
-    print ("Opened database successfully "+published);
+    if query_parameters:
+        published = query_parameters.get('published')
+    #print ("Opened database successfully "+published);
     print(published)
     sql = "UPDATE BOOKS SET first_sentence = 'Canyon 1236' WHERE published = '2013'"
     x = conn.execute(sql); #executinng the specified curd operation
@@ -99,12 +103,12 @@ def update_records():
     #api for deleting a record
 @app.route('/api/v1/resources/books/deleteBook', methods=['DELETE'])
 def delete_records():
-    conn = sqlite3.connect('books.db') #create connectio with db
+    conn = sqlite3.connect('books.db') #create connection with db
     query_parameters = request.args #get params from request
     published = query_parameters.get('published')
     print ("Opened database successfully "+published);
     print(published)
-    sql = "DELETE from BOOKS WHERE published = '2014'"
+    sql = "DELETE from BOOKS WHERE published = published"
     x = conn.execute(sql); #executinng the specified curd operation
     print(x)
     conn.commit()
@@ -112,4 +116,20 @@ def delete_records():
     # print(response.function())
     print ("Records deleted successfully");
     return response.sendResponse(published) 
+
+@app.route('/api/v1/resources/books/addBookPrep', methods=['POST'])
+def prepS():
+    con = sqlite3.connect('a.db')
+    cur = con.cursor()
+    query_parameters = request.args
+    sqlQuery = "INSERT INTO EMP (name) values (?)"
+    name = query_parameters.get("name")
+    print(cur.rowcount)
+    #c = cur.execute('INSERT INTO EMP (name) values (?)', ([name]))
+    c = cur.execute(sqlQuery, ([name]))
+    print(cur.rowcount)
+    con.commit()
+    con.close()
+    return response.sendResponse("Record inserted successfully")
+
 app.run()
