@@ -25,24 +25,27 @@ def home():
 
 #api for fetching all the existing books
 @app.route('/api/v1/resources/books/all', methods=['GET'])
-def api_all():
-    conn = sqlite3.connect('books.db')
+def getAllBooks():
+    conn = sqlite3.connect(databaseName)
     conn.row_factory = dict_factory
     print(dict_factory)
     cur = conn.cursor()
-    all_books = cur.execute('SELECT * FROM books;').fetchall()
-    print(all_books)
-    return jsonify(all_books)
-
-
-@app.errorhandler(404)
-def page_not_found(e):
-    return "<h1>404</h1><p>The resource could not be found.</p>", 404
-
+    try:
+        all_books = cur.execute('SELECT * FROM books;').fetchall()
+        #print(all_books)
+        return jsonify(all_books)
+    except Exception as msg:
+        print(msg)  
+        return jsonify(msg)  
+    finally:
+        #conn.close()
+        #cur.close() 
+        print("close")   
+    
 
 #api for fetching all the existing books on the basis of supplied params
 @app.route('/api/v1/resources/books', methods=['GET'])
-def api_filter():
+def getBooksBy():
     conn = sqlite3.connect('books.db')
     query_parameters = request.args
     id = query_parameters.get('id')
@@ -71,7 +74,7 @@ def api_filter():
 
 #api for creating record 
 @app.route('/api/v1/resources/books/addBook', methods=['POST'])
-def create_records():
+def addBook():
     rmsg = ""
     conn = sqlite3.connect(databaseName) #create connectio with db
     query_parameters = request.args #get params from request
@@ -96,27 +99,33 @@ def create_records():
     return jsonify(rmsg)
 
 
-
 #api for updating a record
 @app.route('/api/v1/resources/books/updateBook', methods=['PUT'])
-def update_records():
-    conn = sqlite3.connect('books.db') #create connection with db
+def updateBook():
+    conn = sqlite3.connect(databaseName) #create connection with db
+    cur = conn.cursor()
     query_parameters = request.args #get params from request
+    sqlQuery = "UPDATE BOOKS SET first_sentence = ? , author = ? WHERE published = ?"
     if query_parameters:
         published = query_parameters.get('published')
-    #print ("Opened database successfully "+published);
-    print(published)
-    sql = "UPDATE BOOKS SET first_sentence = 'Canyon 1236' WHERE published = '2013'"
-    x = conn.execute(sql); #executinng the specified curd operation
-    print(x)
+        first_sentence = query_parameters.get("first_sentence") 
+        author = query_parameters.get("author") 
+        print(published)
+        print(first_sentence) 
+    try:
+         x = cur.execute(sqlQuery,([first_sentence,author,published])); #executinng the specified curd operation
+         print(x)
+    except Exception as errorMessage:
+         print(errorMessage)
     conn.commit()
     # print(response.function())
     print ("Records updated successfully");
-    return response.sendResponse(published) 
+    return response.sendResponse(published)
 
-    #api for deleting a record
+
+#api for deleting a record
 @app.route('/api/v1/resources/books/deleteBook', methods=['DELETE'])
-def delete_records():
+def deleteBook():
     conn = sqlite3.connect('books.db') #create connection with db
     query_parameters = request.args #get params from request
     published = query_parameters.get('published')
@@ -145,5 +154,10 @@ def prepS():
     con.commit()
     con.close()
     return response.sendResponse("Record inserted successfully")
+
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return "<h1>404</h1><p>The resource could not be found.</p>", 404
 
 app.run()
